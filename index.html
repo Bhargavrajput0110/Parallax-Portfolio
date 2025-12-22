@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARALLAX | DIGITAL REALITY</title>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;800&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #030303;
+            --text: #f0f0f0;
+            --accent: #FF3B30;
+            --secondary: #8E8E93;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Manrope', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            cursor: none;
+            user-select: none;
+        }
+
+        /* --- LOADER --- */
+        #loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Syncopate', sans-serif; font-weight: 700;
+            color: var(--text); font-size: 2rem;
+        }
+        #loader-text { 
+            mix-blend-mode: normal; 
+            letter-spacing: 0.2em;
+        }
+        .loader-progress {
+            position: absolute; bottom: 0; left: 0; height: 4px; width: 0%;
+            background: var(--accent);
+        }
+
+        /* --- WEBGL CANVAS --- */
+        #webgl {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1; pointer-events: none;
+        }
+
+        /* --- BACKGROUND MEGA TYPE --- */
+        .mega-bg-text {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Syncopate', sans-serif;
+            font-weight: 700;
+            font-size: 25vw;
+            color: rgba(255,255,255,0.02);
+            white-space: nowrap;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* --- UI LAYER --- */
+        #ui-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10; pointer-events: none;
+            perspective: 1000px;
+        }
+
+        /* --- TOP NAV (NEW) --- */
+        .top-nav {
+            position: fixed;
+            top: 40px;
+            right: 50px;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+            pointer-events: auto; /* Enable interaction */
+        }
+
+        .nav-btn {
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 28px;
+            
+            /* Glass Effect */
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            position: relative;
+            overflow: hidden;
+            
+            /* 3D Setup */
+            transition: border-color 0.3s, box-shadow 0.3s;
+            transform-style: preserve-3d;
+            will-change: transform;
+            cursor: pointer;
+        }
+
+        /* Holographic Swipe */
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -150%;
+            width: 150%; height: 100%;
+            background: linear-gradient(
+                90deg, 
+                transparent, 
+                rgba(255,255,255,0.2), 
+                rgba(255,255,255,0.6), 
+                rgba(255,255,255,0.2), 
+                transparent
+            );
+            transition: left 0.6s cubic-bezier(0.2, 1, 0.3, 1);
+            transform: skewX(-25deg);
+            pointer-events: none;
+        }
+
+        .nav-btn:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.15); /* Subtle accent glow */
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        /* --- TYPOGRAPHY & LAYOUT --- */
+        .section {
+            position: absolute; width: 100%; height: 100vh;
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 0 5vw; will-change: transform;
+            z-index: 10;
+        }
+
+        h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-weight: 700;
+            font-size: clamp(3rem, 9vw, 12rem);
+            line-height: 0.85;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.8);
+            position: relative;
+            z-index: 2;
+        }
+        
+        .h-line {
+            overflow: hidden;
+            display: block;
+        }
+        
+        .char {
+            display: inline-block;
+            transform-origin: 50% 100%;
+            will-change: transform, opacity;
+        }
+
+        .filled-text {
+            color: #fff;
+            -webkit-text-stroke: 0;
+        }
+
+        .meta-label {
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            display: block;
+            overflow: hidden;
+        }
+        
+        .meta-line {
+            display: block;
+        }
+
+        /* --- PROJECT LINKS --- */
+        .project-link {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(2rem, 5vw, 6rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255,255,255,0.4);
+            cursor: none;
+            pointer-events: auto;
+            position: relative;
+            display: table; 
+            margin: 1rem 0;
+            transition: transform 0.6s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s;
+            mix-blend-mode: exclusion;
+            text-decoration: none;
+        }
+
+        .project-link::before {
+            content: attr(data-text);
+            position: absolute; top: 0; left: 0;
+            color: var(--accent);
+            -webkit-text-stroke: 0;
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 0.6s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        .project-link:hover {
+            transform: translateX(30px);
+            -webkit-text-stroke: 1px rgba(255,255,255,0.8);
+        }
+        .project-link:hover::before {
+            clip-path: inset(0 0 0 0);
+        }
+        
+        #sect-visuals .project-link {
+            font-size: clamp(1.5rem, 4vw, 5rem);
+            -webkit-text-stroke: 1px rgba(142, 142, 147, 0.5);
+        }
+        #sect-visuals .project-link::before {
+            color: #fff;
+        }
+
+        /* --- SERVICES GRID --- */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 3rem;
+            pointer-events: auto; /* Enable interaction */
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            backdrop-filter: blur(5px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .service-num {
+            font-family: 'Syncopate', sans-serif;
+            color: var(--secondary);
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .service-title {
+            font-family: 'Manrope', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* --- INFINITE MARQUEE --- */
+        .marquee-container {
+            position: absolute;
+            bottom: 15vh;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            mix-blend-mode: overlay;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .marquee-inner {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        .marquee-item {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            margin-right: 2rem;
+            color: transparent;
+            -webkit-text-stroke: 1px #fff;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* --- MAGNET BUTTONS --- */
+        .magnet-btn {
+            pointer-events: auto;
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 160px; height: 160px;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255,255,255,0.01);
+            backdrop-filter: blur(5px);
+            color: #fff;
+            text-decoration: none;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .magnet-btn:hover {
+            border-color: var(--accent);
+            color: var(--bg);
+        }
+        
+        .magnet-fill {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--accent);
+            border-radius: 50%;
+            transform: scale(0);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -1;
+        }
+        .magnet-btn:hover .magnet-fill { transform: scale(1); }
+
+        /* --- CURSOR --- */
+        #cursor {
+            position: fixed; width: 20px; height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none; z-index: 1000;
+            mix-blend-mode: difference;
+            transition: width 0.3s, height 0.3s, opacity 0.3s;
+        }
+        #cursor.hovered { 
+            width: 80px; height: 80px; 
+            background: #fff; 
+            opacity: 0.1; 
+            mix-blend-mode: normal; 
+            backdrop-filter: invert(1); 
+        }
+
+        /* --- GRAIN OVERLAY --- */
+        .grain {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 900;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.07;
+        }
+
+        /* --- HUD --- */
+        .hud {
+            position: fixed; z-index: 100;
+            font-size: 10px; font-family: 'Manrope', sans-serif;
+            color: rgba(255,255,255,0.4); text-transform: uppercase;
+            pointer-events: none;
+            opacity: 0;
+        }
+        .hud-tl { top: 30px; left: 30px; }
+        .hud-tr { top: 30px; right: 30px; text-align: right; }
+        .hud-bl { bottom: 30px; left: 30px; display: flex; align-items: flex-end; gap: 20px; }
+        .scroll-line { width: 1px; height: 100px; background: rgba(255,255,255,0.2); position: relative; overflow: hidden; }
+        .scroll-prog { position: absolute; top: 0; left: 0; width: 100%; height: 0%; background: var(--accent); }
+
+        /* Section Specific Alignment */
+        #sect-hero { align-items: flex-start; }
+        #sect-about { align-items: flex-end; text-align: right; }
+        #sect-services { align-items: center; justify-content: center; }
+        #sect-work { align-items: center; text-align: center; }
+        #sect-visuals { align-items: flex-end; text-align: right; }
+        #sect-footer { align-items: center; justify-content: center; }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 12vw; }
+            .project-link { font-size: 8vw; }
+            .section { padding: 0 20px; }
+            .mega-bg-text { display: none; }
+            .top-nav { display: none; }
+            .services-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- OVERLAYS -->
+    <div class="grain"></div>
+    <div id="cursor"></div>
+    <div class="mega-bg-text" id="mega-text">PARALLAX</div>
+    
+    <div id="loader">
+        <div id="loader-text">INITIALIZING</div>
+        <div class="loader-progress" id="loader-prog"></div>
+    </div>
+
+    <!-- WEBGL -->
+    <canvas id="webgl"></canvas>
+
+    <!-- HUD -->
+    <div class="hud hud-tl">PARALLAX OS<br>[BUILD 2025.2.0]</div>
+    <div class="hud hud-tr">COORDINATES<br><span id="coords">00.00 / 00.00</span></div>
+    <div class="hud hud-bl">
+        <div class="scroll-line"><div class="scroll-prog" id="scroll-bar"></div></div>
+        <div>SCROLL TO NAVIGATE</div>
+    </div>
+
+    <!-- CONTENT -->
+    <div id="ui-layer">
+        
+        <!-- TOP NAV -->
+        <nav class="top-nav">
+            <a href="#sect-services" class="nav-btn">SERVICES</a>
+            <a href="#sect-work" class="nav-btn">WORK</a>
+            <a href="#sect-footer" class="nav-btn">CONTACT US</a>
+        </nav>
+
+        <!-- HERO -->
+        <div class="section" id="sect-hero">
+            <span class="meta-label">
+                <span class="meta-line">001 /// INTRODUCTION</span>
+            </span>
+            <h1>
+                <div class="h-line">THE</div>
+                <div class="h-line"><span class="filled-text">PARALLAX</span></div>
+            </h1>
+        </div>
+
+        <!-- ABOUT -->
+        <div class="section" id="sect-about">
+            <span class="meta-label">002 /// PHILOSOPHY</span>
+            <h1>BEYOND<br>THE<br><span class="filled-text">INTERFACE</span></h1>
+            <p style="max-width: 400px; margin-top: 2rem; font-size: 1.1rem; color: #aaa; line-height: 1.6;">
+                We construct immersive digital experiences. Merging fluid WebGL mechanics with precise interaction design to create the unforgettable.
+            </p>
+            <div class="marquee-container">
+                <div class="marquee-inner">
+                    <span class="marquee-item">CREATIVE DEVELOPMENT</span>
+                    <span class="marquee-item">WEBGL EXPERIENCES</span>
+                    <span class="marquee-item">IMMERSIVE UI</span>
+                    <span class="marquee-item">INTERACTION DESIGN</span>
+                    <span class="marquee-item">CREATIVE DEVELOPMENT</span>
+                    <span class="marquee-item">WEBGL EXPERIENCES</span>
+                    <span class="marquee-item">IMMERSIVE UI</span>
+                    <span class="marquee-item">INTERACTION DESIGN</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SERVICES (NEW SECTION) -->
+        <div class="section" id="sect-services">
+            <span class="meta-label" style="margin-bottom: 2rem;">003 /// CAPABILITIES</span>
+            <h1>OUR<br><span class="filled-text">EXPERTISE</span></h1>
+            
+            <div class="services-grid">
+                <div class="service-card">
+                    <span class="service-num">01</span>
+                    <div class="service-title">Digital Marketing</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">02</span>
+                    <div class="service-title">Pre/Post Production</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">03</span>
+                    <div class="service-title">Content & Scripting</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">04</span>
+                    <div class="service-title">SEO Optimization</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">05</span>
+                    <div class="service-title">Web Dev & Deployment</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">06</span>
+                    <div class="service-title">UI/UX Design</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">07</span>
+                    <div class="service-title">Video Editing</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">08</span>
+                    <div class="service-title">Motion Graphics</div>
+                </div>
+                <div class="service-card">
+                    <span class="service-num">09</span>
+                    <div class="service-title">Graphic Design</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WORK (WEB) -->
+        <div class="section" id="sect-work">
+            <span class="meta-label" style="margin-bottom: 4rem;">004 /// SELECTED WEB WORKS</span>
+            
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem;">
+                <a href="https://sweetcrumb-app.vercel.app/" target="_blank" class="project-link" data-text="SWEET CRUMB" data-img="https://images.unsplash.com/photo-1555507036-ab1f40388085?q=80&w=2526&auto=format&fit=crop">
+                    SWEET CRUMB
+                </a>
+                <a href="https://funk-store.vercel.app/" target="_blank" class="project-link" data-text="FUNK STORE" data-img="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2670&auto=format&fit=crop">
+                    FUNK STORE
+                </a>
+                <a href="https://glow-studio-woad.vercel.app/" target="_blank" class="project-link" data-text="GLOW STUDIO" data-img="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2670&auto=format&fit=crop">
+                    GLOW STUDIO
+                </a>
+                <a href="https://cafe-aroma-site.vercel.app/" target="_blank" class="project-link" data-text="CAFE AROMA" data-img="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=2671&auto=format&fit=crop">
+                    CAFE AROMA
+                </a>
+            </div>
+        </div>
+
+        <!-- VISUALS (VIDEO & GRAPHICS) -->
+        <div class="section" id="sect-visuals">
+            <span class="meta-label" style="margin-bottom: 4rem;">005 /// VISUAL ARCHIVES</span>
+            
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 1.5rem; text-align: right;">
+                <a href="#" class="project-link" data-text="CINEMATIC REEL" data-img="https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=2600&auto=format&fit=crop">
+                    CINEMATIC REEL
+                </a>
+                <a href="#" class="project-link" data-text="BRAND IDENTITY" data-img="https://images.unsplash.com/photo-1626785774573-4b799314346d?q=80&w=2670&auto=format&fit=crop">
+                    BRAND IDENTITY
+                </a>
+                <a href="#" class="project-link" data-text="MOTION GFX" data-img="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2670&auto=format&fit=crop">
+                    MOTION GFX
+                </a>
+                <a href="#" class="project-link" data-text="EDITORIAL" data-img="https://images.unsplash.com/photo-1542038784456-1ea0e93ca64b?q=80&w=2574&auto=format&fit=crop">
+                    EDITORIAL
+                </a>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="section" id="sect-footer">
+            <span class="meta-label">006 /// CONTACT</span>
+            <h1 style="font-size: 6vw; margin-bottom: 3rem;">INITIATE<br><span class="filled-text" style="color: var(--accent)">PROJECT</span></h1>
+            
+            <a href="#" class="magnet-btn">
+                <div class="magnet-fill"></div>
+                <span style="position: relative; z-index: 2;">CONTACT<br>& QUERY</span>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- SHADERS -->
+    
+    <!-- GLASS CORE VERTEX -->
+    <script type="x-shader/x-vertex" id="coreVert">
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+        varying vec3 vWorldPosition;
+        uniform float uTime;
+        uniform float uDeform; 
+        
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+        float snoise(vec3 v) {
+            const vec2  C = vec2(1.0/6.0, 1.0/3.0) ;
+            const vec4  D = vec4(0.0, 0.5, 1.0, 2.0);
+            vec3 i  = floor(v + dot(v, C.yyy) );
+            vec3 x0 = v - i + dot(i, C.xxx) ;
+            vec3 g = step(x0.yzx, x0.xyz);
+            vec3 l = 1.0 - g;
+            vec3 i1 = min( g.xyz, l.zxy );
+            vec3 i2 = max( g.xyz, l.zxy );
+            vec3 x1 = x0 - i1 + C.xxx;
+            vec3 x2 = x0 - i2 + C.yyy;
+            vec3 x3 = x0 - D.yyy;
+            i = mod289(i);
+            vec4 p = permute( permute( permute( 
+                        i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+                    + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
+                    + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+            float n_ = 0.142857142857;
+            vec3  ns = n_ * D.wyz - D.xzx;
+            vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+            vec4 x_ = floor(j * ns.z);
+            vec4 y_ = floor(j - 7.0 * x_ );
+            vec4 x = x_ *ns.x + ns.yyyy;
+            vec4 y = y_ *ns.x + ns.yyyy;
+            vec4 h = 1.0 - abs(x) - abs(y);
+            vec4 b0 = vec4( x.xy, y.xy );
+            vec4 b1 = vec4( x.zw, y.zw );
+            vec4 s0 = floor(b0)*2.0 + 1.0;
+            vec4 s1 = floor(b1)*2.0 + 1.0;
+            vec4 sh = -step(h, vec4(0.0));
+            vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+            vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+            vec3 p0 = vec3(a0.xy,h.x);
+            vec3 p1 = vec3(a0.zw,h.y);
+            vec3 p2 = vec3(a1.xy,h.z);
+            vec3 p3 = vec3(a1.zw,h.w);
+            vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+            p0 *= norm.x;
+            p1 *= norm.y;
+            p2 *= norm.z;
+            p3 *= norm.w;
+            vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+            m = m * m;
+            return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), 
+                                        dot(p2,x2), dot(p3,x3) ) );
+        }
+
+        void main() {
+            vNormal = normalize(normalMatrix * normal);
+            vec3 pos = position;
+            
+            // Liquid movement
+            float noise = snoise(vec3(pos.x * 1.5, pos.y * 1.5, uTime * 0.5));
+            
+            // React to scroll (uDeform)
+            float spike = snoise(vec3(pos.x * 2.0, pos.y * 2.0, uTime * 3.0)) * uDeform;
+            
+            pos += normal * (noise * 0.3 + spike);
+
+            vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+            vViewPosition = -mvPosition.xyz;
+            vWorldPosition = (modelMatrix * vec4(pos, 1.0)).xyz;
+            
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    </script>
+
+    <!-- GLASS CORE FRAGMENT (REWRITTEN FOR CRYSTALLINE REFRACTION) -->
+    <script type="x-shader/x-fragment" id="coreFrag">
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+        varying vec3 vWorldPosition;
+        
+        uniform vec3 uColor;
+        
+        void main() {
+            vec3 viewDir = normalize(vViewPosition);
+            vec3 normal = normalize(vNormal);
+            
+            // Calculate Fresnel for edge glow
+            float fresnel = pow(1.0 - dot(viewDir, normal), 4.0);
+            
+            // Fake Internal Refraction/Dispersion
+            // We use the normal and view vector to "look up" a fake color from a spectrum
+            vec3 refr = refract(-viewDir, normal, 0.9); // Index of refraction
+            
+            // Generate rainbow dispersion based on refraction direction
+            float r = sin(refr.y * 20.0 + 0.0) * 0.5 + 0.5;
+            float g = sin(refr.y * 20.0 + 2.0) * 0.5 + 0.5;
+            float b = sin(refr.y * 20.0 + 4.0) * 0.5 + 0.5;
+            
+            vec3 internalColor = vec3(r, g, b) * uColor;
+            
+            // Add "sparkles" based on high frequency reflection
+            vec3 reflectDir = reflect(-viewDir, normal);
+            float sparkle = pow(max(0.0, dot(reflectDir, vec3(0.0, 1.0, 0.0))), 30.0) * 0.5;
+            
+            // Combine: Dark glass interior + Spectral Refraction + White Edge Fresnel + Sparkle
+            vec3 finalColor = mix(internalColor * 0.4, vec3(0.9), fresnel);
+            finalColor += sparkle;
+            
+            gl_FragColor = vec4(finalColor, 0.6 + fresnel * 0.4); // Semi-transparent
+        }
+    </script>
+
+    <!-- IMAGE REVEAL SHADER (UPDATED FOR GLASS LENS EFFECT) -->
+    <script type="x-shader/x-vertex" id="imgVert">
+        uniform vec2 uOffset;
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+        
+        #define M_PI 3.1415926535897932384626433832795
+
+        vec3 deformationCurve(vec3 position, vec2 uv, vec2 offset) {
+            position.x = position.x + (sin(uv.y * M_PI) * offset.x);
+            position.y = position.y + (sin(uv.x * M_PI) * offset.y);
+            return position;
+        }
+
+        void main() {
+            vUv = uv;
+            vNormal = normalize(normalMatrix * normal);
+            
+            vec3 newPosition = deformationCurve(position, uv, uOffset);
+            
+            vec4 mvPosition = modelViewMatrix * vec4(newPosition, 1.0);
+            vViewPosition = -mvPosition.xyz;
+            
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    </script>
+
+    <script type="x-shader/x-fragment" id="imgFrag">
+        uniform sampler2D uTexture;
+        uniform float uAlpha;
+        uniform vec2 uOffset;
+        
+        varying vec2 vUv;
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+
+        void main() {
+            // 1. Image Color with Chromatic Aberration
+            vec2 dir = uOffset * 0.02;
+            float r = texture2D(uTexture, vUv + dir).r;
+            float g = texture2D(uTexture, vUv).g;
+            float b = texture2D(uTexture, vUv - dir).b;
+            vec3 texColor = vec3(r, g, b);
+            
+            // 2. Glass Specular Highlight (The "Shine")
+            // Simulate a light source coming from top-left
+            vec3 viewDir = normalize(vViewPosition);
+            vec3 normal = normalize(vNormal);
+            vec3 lightDir = normalize(vec3(1.0, 1.0, 2.0)); 
+            
+            // Standard Blinn-Phong Specular
+            vec3 halfVector = normalize(lightDir + viewDir);
+            float NdotH = max(0.0, dot(normal, halfVector));
+            float specular = pow(NdotH, 80.0) * 0.5; // Sharp highlight
+            
+            // 3. Fresnel Edge (Glass Thickness)
+            float fresnel = pow(1.0 - dot(viewDir, normal), 3.0) * 0.4;
+            
+            // Combine
+            vec3 finalColor = texColor + vec3(specular) + vec3(fresnel);
+            
+            gl_FragColor = vec4(finalColor, uAlpha * (0.9 + fresnel)); // Slight opacity boost on edges
+        }
+    </script>
+
+    <!-- POST PROCESSING -->
+    <script type="x-shader/x-fragment" id="postFrag">
+        uniform sampler2D tDiffuse;
+        uniform float uTime;
+        varying vec2 vUv;
+
+        float random(vec2 p) {
+            vec2 k1 = vec2(23.14069263277926, 2.665144142690225);
+            return fract(cos(dot(p, k1)) * 12345.6789);
+        }
+
+        void main() {
+            vec4 color = texture2D(tDiffuse, vUv);
+            vec2 uv = vUv;
+            
+            float dist = distance(uv, vec2(0.5));
+            color.rgb *= smoothstep(0.8, 0.2, dist * (1.0 + color.r * 0.2));
+            
+            float noise = (random(uv + uTime) - 0.5) * 0.05;
+            color.rgb += noise;
+            
+            gl_FragColor = color;
+        }
+    </script>
+    <script type="x-shader/x-vertex" id="postVert">
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    </script>
+
+    <!-- MAIN LOGIC -->
+    <script>
+        // --- CONFIG ---
+        const config = {
+            scroll: 0,
+            targetScroll: 0,
+            touchY: 0,
+            height: 0,
+            mouse: new THREE.Vector2(),
+            mouseVel: new THREE.Vector2(),
+            targetMouse: new THREE.Vector2(),
+            scrollSpeed: 0
+        };
+
+        const dom = {
+            loader: document.getElementById('loader'),
+            loaderText: document.getElementById('loader-text'),
+            loaderProg: document.getElementById('loader-prog'),
+            canvas: document.getElementById('webgl'),
+            cursor: document.getElementById('cursor'),
+            coords: document.getElementById('coords'),
+            scrollBar: document.getElementById('scroll-bar'),
+            sections: document.querySelectorAll('.section'),
+            megaText: document.getElementById('mega-text'),
+            marqueeInner: document.querySelector('.marquee-inner'),
+            uiLayer: document.getElementById('ui-layer'),
+            hud: document.querySelectorAll('.hud')
+        };
+
+        // --- UTILS: TEXT SCRAMBLE & SPLIT ---
+        const scrambleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/*-+=.";
+        function scrambleText(element, finalText, duration = 800, delay = 0) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    let frame = 0;
+                    const totalFrames = duration / 16;
+                    const originalText = finalText.split('');
+                    
+                    const interval = setInterval(() => {
+                        frame++;
+                        const progress = frame / totalFrames;
+                        
+                        const currentText = originalText.map((char, index) => {
+                            if (index < progress * originalText.length) {
+                                return char;
+                            }
+                            // Random char for decoding effect
+                            return scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
+                        }).join('');
+                        
+                        element.innerText = currentText;
+                        
+                        if (frame >= totalFrames) {
+                            clearInterval(interval);
+                            element.innerText = finalText;
+                            resolve();
+                        }
+                    }, 16);
+                }, delay);
+            });
+        }
+
+        function splitTextToSpans(selector) {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+                const text = el.innerText;
+                el.innerHTML = text.split('').map(char => 
+                    char === ' ' ? '&nbsp;' : `<span class="char">${char}</span>`
+                ).join('');
+            });
+        }
+
+        // --- SCENE SETUP ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 100);
+        camera.position.z = 10;
+        
+        const renderer = new THREE.WebGLRenderer({ canvas: dom.canvas, alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // --- GLASS CORE OBJECT ---
+        const coreGeo = new THREE.IcosahedronGeometry(2, 64);
+        const coreMat = new THREE.ShaderMaterial({
+            vertexShader: document.getElementById('coreVert').textContent,
+            fragmentShader: document.getElementById('coreFrag').textContent,
+            uniforms: {
+                uTime: { value: 0 },
+                uDeform: { value: 0 },
+                uColor: { value: new THREE.Color(0xFF3B30) } 
+            },
+            transparent: true,
+            side: THREE.DoubleSide
+        });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        scene.add(core);
+
+        // --- FLOW FIELD PARTICLES ---
+        const pCount = 1000;
+        const pGeo = new THREE.BufferGeometry();
+        const pPos = new Float32Array(pCount * 3);
+        const pOrig = new Float32Array(pCount * 3); 
+
+        for(let i=0; i<pCount*3; i+=3) {
+            pPos[i] = (Math.random() - 0.5) * 30;
+            pPos[i+1] = (Math.random() - 0.5) * 30;
+            pPos[i+2] = (Math.random() - 0.5) * 10 - 5;
+            
+            pOrig[i] = pPos[i];
+            pOrig[i+1] = pPos[i+1];
+            pOrig[i+2] = pPos[i+2];
+        }
+        
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        const pMat = new THREE.PointsMaterial({
+            color: 0x8E8E93,
+            size: 0.05,
+            transparent: true,
+            opacity: 0.6
+        });
+        const particles = new THREE.Points(pGeo, pMat);
+        scene.add(particles);
+
+        // --- IMAGE REVEAL PLANES ---
+        const textureLoader = new THREE.TextureLoader();
+        const imgGeometry = new THREE.PlaneGeometry(1, 1, 64, 64); // Increased segments for smoother deform
+        const imgMesh = new THREE.Mesh(imgGeometry, new THREE.ShaderMaterial({
+            vertexShader: document.getElementById('imgVert').textContent,
+            fragmentShader: document.getElementById('imgFrag').textContent,
+            uniforms: {
+                uTexture: { value: null },
+                uAlpha: { value: 0 },
+                uOffset: { value: new THREE.Vector2(0, 0) }
+            },
+            transparent: true,
+            side: THREE.DoubleSide
+        }));
+        imgMesh.scale.set(6, 4, 1);
+        imgMesh.position.z = 2; 
+        scene.add(imgMesh);
+
+        let currentImgTarget = null;
+        const projectLinks = document.querySelectorAll('.project-link');
+        
+        projectLinks.forEach(link => {
+            const url = link.getAttribute('data-img');
+            const tex = textureLoader.load(url);
+            
+            link.addEventListener('mouseenter', () => {
+                currentImgTarget = link;
+                imgMesh.material.uniforms.uTexture.value = tex;
+                gsap.to(imgMesh.material.uniforms.uAlpha, { value: 1, duration: 0.4 });
+                dom.cursor.classList.add('hovered');
+            });
+            
+            link.addEventListener('mouseleave', () => {
+                currentImgTarget = null;
+                gsap.to(imgMesh.material.uniforms.uAlpha, { value: 0, duration: 0.4 });
+                dom.cursor.classList.remove('hovered');
+            });
+        });
+
+        // --- POST PROCESSING SCENE ---
+        const postScene = new THREE.Scene();
+        const postCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+        const renderTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
+        const postMat = new THREE.ShaderMaterial({
+            vertexShader: document.getElementById('postVert').textContent,
+            fragmentShader: document.getElementById('postFrag').textContent,
+            uniforms: {
+                tDiffuse: { value: renderTarget.texture },
+                uTime: { value: 0 }
+            }
+        });
+        const postQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat);
+        postScene.add(postQuad);
+
+        // --- EVENTS & LOGIC ---
+        
+        // 1. Loader & Intro Sequence (Active Theory Style Blend)
+        const init = () => {
+            // Prepare Split Text
+            splitTextToSpans('.h-line');
+            splitTextToSpans('.meta-line');
+            
+            // Set initial state for blend effect
+            gsap.set('#sect-hero', { scale: 1.15, transformOrigin: "center center" });
+            gsap.set(core.scale, { x: 1, y: 1, z: 1 }); 
+            gsap.set(core.position, { z: -10 }); // Start deep
+
+            // 1. Progress Bar & Text
+            gsap.to(dom.loaderProg, { width: '100%', duration: 1.5, ease: "expo.inOut" });
+            
+            scrambleText(dom.loaderText, "SYSTEMS ONLINE", 1200, 100).then(() => {
+                
+                const tl = gsap.timeline();
+
+                // 2. THE BLEND: Fade out text -> Curtain Wipe + Content Zoom
+                
+                // Fade out loader text & progress bar so they don't linger during wipe
+                tl.to([dom.loaderText, dom.loaderProg], {
+                    opacity: 0,
+                    duration: 0.5,
+                    ease: "power2.out"
+                });
+
+                // Loader wipes up (starts slightly before text is fully gone)
+                tl.to(dom.loader, {
+                    height: 0,
+                    duration: 1.5,
+                    ease: "power4.inOut"
+                }, "-=0.3");
+
+                // Content zooms out slightly (creating the feeling of entering the room)
+                tl.to('#sect-hero', {
+                    scale: 1.0,
+                    duration: 2.0,
+                    ease: "power3.out"
+                }, "-=1.5");
+
+                // 3. Kinetic Typography (Strong Skew & Slide)
+                tl.from('.h-line .char', {
+                    yPercent: 200,
+                    skewY: 20,
+                    opacity: 0,
+                    duration: 1.5,
+                    stagger: 0.03,
+                    ease: "power4.out"
+                }, "-=1.3");
+                
+                // Meta labels typing in mechanically
+                tl.from('.meta-line .char', {
+                    opacity: 0,
+                    duration: 0.1,
+                    stagger: 0.02, // Mechanical type effect
+                    ease: "none"
+                }, "-=1.0");
+
+                // 4. Dynamic 3D Entrance (Zoom In)
+                // Moves from -10 to 0 (Projecting into space)
+                tl.to(core.position, {
+                    z: 0, 
+                    duration: 2.5,
+                    ease: "expo.out"
+                }, "-=1.8");
+                
+                // Spinning into place
+                tl.from(core.rotation, {
+                    y: -Math.PI,
+                    x: -Math.PI / 2,
+                    duration: 2.5,
+                    ease: "expo.out"
+                }, "-=2.5");
+                
+                // Reveal HUD elements
+                tl.to(dom.hud, {
+                    opacity: 1,
+                    duration: 1,
+                    ease: "power2.out"
+                }, "-=1.0");
+
+                // Reveal Nav Buttons (Staggered from Top)
+                tl.from('.nav-btn', {
+                    y: -50,
+                    opacity: 0,
+                    stagger: 0.1,
+                    duration: 0.8,
+                    ease: "power3.out"
+                }, "-=1.5");
+
+            });
+
+            updateHeight();
+        }
+
+        if (document.readyState === 'complete') {
+            init();
+        } else {
+            window.addEventListener('load', init);
+        }
+
+        function updateHeight() {
+            // Need to re-query sections as we added one dynamically or in HTML
+            const sections = document.querySelectorAll('.section');
+            config.height = (sections.length - 1) * window.innerHeight;
+        }
+        window.addEventListener('resize', () => {
+            updateHeight();
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderTarget.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 2. Input
+        window.addEventListener('mousemove', e => {
+            const x = (e.clientX / window.innerWidth) * 2 - 1;
+            const y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            config.targetMouse.set(x, y);
+            
+            // DOM Cursor
+            gsap.to(dom.cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+            dom.coords.innerText = `${x.toFixed(2)} / ${y.toFixed(2)}`;
+            
+            // Magnet Button Effect (Existing Big Buttons)
+            const hovered = e.target.closest('.magnet-btn');
+            if(hovered) {
+                const rect = hovered.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                const mx = (e.clientX - centerX) * 0.4;
+                const my = (e.clientY - centerY) * 0.4;
+                
+                gsap.to(hovered, { x: mx, y: my, duration: 0.3 });
+            }
+        });
+
+        // Clear magnets when mouse leaves
+        window.addEventListener('mouseover', e => {
+            if(!e.target.closest('.magnet-btn')) {
+                gsap.to('.magnet-btn', { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+            }
+        });
+
+        // --- NEW: 3D Tilt for Top Nav Buttons ---
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('mousemove', (e) => {
+                const rect = btn.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                // Calculate tilt rotation (max 20deg)
+                const rotateX = ((y - centerY) / centerY) * -20; 
+                const rotateY = ((x - centerX) / centerX) * 20;
+
+                // Apply simple 3D transform without causing layout issues
+                btn.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`;
+            });
+
+            btn.addEventListener('mouseleave', () => {
+                // Reset
+                btn.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+            });
+
+            // --- NAVIGATION SCROLL LOGIC ---
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = btn.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                if (targetSection) {
+                    // Find index of section
+                    const allSections = Array.from(document.querySelectorAll('.section'));
+                    const index = allSections.indexOf(targetSection);
+                    
+                    if (index !== -1) {
+                        // Update targetScroll to animate there
+                        config.targetScroll = index * window.innerHeight;
+                    }
+                }
+            });
+        });
+
+        // 3. Scroll
+        window.addEventListener('wheel', e => {
+            config.targetScroll += e.deltaY;
+            config.targetScroll = Math.max(0, Math.min(config.targetScroll, config.height));
+        });
+
+        // Touch
+        window.addEventListener('touchstart', e => config.touchY = e.touches[0].clientY);
+        window.addEventListener('touchmove', e => {
+            const dy = config.touchY - e.touches[0].clientY;
+            config.touchY = e.touches[0].clientY;
+            config.targetScroll += dy * 2;
+            config.targetScroll = Math.max(0, Math.min(config.targetScroll, config.height));
+        });
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+        
+        function animate() {
+            const time = clock.getElapsedTime();
+            
+            // Smooth Scroll & Velocity Calculation
+            const prevScroll = config.scroll;
+            config.scroll += (config.targetScroll - config.scroll) * 0.08; 
+            config.scrollSpeed = Math.abs(config.scroll - prevScroll);
+            
+            // Deform Core based on speed (Inertia effect)
+            const targetDeform = Math.min(config.scrollSpeed * 0.1, 2.0);
+            coreMat.uniforms.uDeform.value = THREE.MathUtils.lerp(coreMat.uniforms.uDeform.value, targetDeform, 0.1);
+
+            // Scroll HUD
+            const prog = config.scroll / config.height;
+            dom.scrollBar.style.height = `${Math.min(100, Math.max(0, prog * 100))}%`;
+            
+            // Mega BG Text Parallax
+            dom.megaText.style.transform = `translate(-50%, -50%) translateY(${-config.scroll * 0.1}px)`;
+            
+            // Marquee Acceleration
+            if(dom.marqueeInner) {
+                const speed = 1 + config.scrollSpeed * 0.5;
+            }
+
+            // Transforms & Lusion "Jelly" DOM Effect
+            const currentSections = document.querySelectorAll('.section');
+            currentSections.forEach((sect, i) => {
+                const y = i * window.innerHeight - config.scroll;
+                // Parallax Skew + Scale Stretch
+                const skew = (config.targetScroll - config.scroll) * 0.005;
+                const stretch = 1 + Math.abs(config.scrollSpeed) * 0.002;
+                
+                sect.style.transform = `translateY(${y}px) skewY(${skew}deg) scaleY(${stretch})`;
+            });
+
+            // --- THREE JS UPDATES ---
+            
+            // Mouse Smooth
+            config.mouse.lerp(config.targetMouse, 0.1);
+            config.mouseVel.subVectors(config.targetMouse, config.mouse);
+
+            // 1. Core Animation
+            coreMat.uniforms.uTime.value = time;
+            core.rotation.y = time * 0.2;
+            core.rotation.x = config.mouse.y * 0.5;
+            core.rotation.z = config.scroll * 0.001;
+            core.position.y = Math.sin(time) * 0.2;
+
+            // 2. Particles (Flow Field)
+            const positions = particles.geometry.attributes.position.array;
+            
+            // Raycaster projection for mouse in 3D
+            const vector = new THREE.Vector3(config.mouse.x, config.mouse.y, 0.5);
+            vector.unproject(camera);
+            const dir = vector.sub(camera.position).normalize();
+            const distance = -camera.position.z / dir.z;
+            const mousePos = camera.position.clone().add(dir.multiplyScalar(distance));
+            
+            for(let i=0; i<pCount; i++) {
+                const i3 = i*3;
+                
+                // Current pos
+                let px = positions[i3];
+                let py = positions[i3+1];
+                let pz = positions[i3+2];
+                
+                // Original pos (plus scroll offset)
+                let ox = pOrig[i3];
+                let oy = pOrig[i3+1] + (config.scroll * 0.01); // Particles move up with scroll
+                
+                // Loop particles for infinite scroll feel
+                if(oy > 15) oy -= 30;
+                if(oy < -15) oy += 30;
+
+                // Mouse Repulsion
+                const dx = mousePos.x - px;
+                const dy = mousePos.y - py;
+                const d = Math.sqrt(dx*dx + dy*dy);
+                
+                if(d < 4) {
+                    const force = (4 - d) / 4;
+                    px -= dx * force * 0.05;
+                    py -= dy * force * 0.05;
+                }
+                
+                // Return to origin (elastic)
+                px += (ox - px) * 0.05;
+                py += (oy - py) * 0.05;
+                pz += (pOrig[i3+2] - pz) * 0.05;
+
+                positions[i3] = px;
+                positions[i3+1] = py;
+                positions[i3+2] = pz;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+
+            // 3. Image Projection - DAMPENED PHYSICS FOR ELEGANCE
+            if(imgMesh.material.uniforms.uAlpha.value > 0.01) {
+                // Follow mouse (Gentle delay)
+                imgMesh.position.x = THREE.MathUtils.lerp(imgMesh.position.x, mousePos.x, 0.1);
+                imgMesh.position.y = THREE.MathUtils.lerp(imgMesh.position.y, mousePos.y, 0.1);
+                
+                // Liquid Distortion based on velocity (Reduced intensity)
+                const targetOffX = config.mouseVel.x * 15; // Was 40, now much subtler
+                const targetOffY = config.mouseVel.y * 15;
+                
+                // Lerp current offset (Heavier dampening for gel-like feel)
+                const uOff = imgMesh.material.uniforms.uOffset.value;
+                uOff.x += (targetOffX - uOff.x) * 0.05; // Was 0.1, slower reaction
+                uOff.y += (targetOffY - uOff.y) * 0.05;
+            }
+
+            // Render with Post Processing
+            renderer.setRenderTarget(renderTarget);
+            renderer.render(scene, camera);
+            renderer.setRenderTarget(null);
+            
+            postMat.uniforms.uTime.value = time;
+            renderer.render(postScene, postCamera);
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+    </script>
+</body>
+</html>
+
+
