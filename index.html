@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,11 +11,13 @@
 
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;800&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;800&family=Syncopate:wght@400;700&display=swap"
+        rel="stylesheet">
+
     <style>
         :root {
             --bg: #030303;
@@ -23,7 +26,11 @@
             --secondary: #8E8E93;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             background: var(--bg);
@@ -38,36 +45,57 @@
 
         /* --- LOADER --- */
         #loader {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 9999;
-            display: flex; justify-content: center; align-items: center;
-            font-family: 'Syncopate', sans-serif; font-weight: 700;
-            color: var(--text); font-size: 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Syncopate', sans-serif;
+            font-weight: 700;
+            color: var(--text);
+            font-size: 2rem;
         }
-        #loader-text { 
-            mix-blend-mode: normal; 
+
+        #loader-text {
+            mix-blend-mode: normal;
             letter-spacing: 0.2em;
         }
+
         .loader-progress {
-            position: absolute; bottom: 0; left: 0; height: 4px; width: 0%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            width: 0%;
             background: var(--accent);
         }
 
         /* --- WEBGL CANVAS --- */
         #webgl {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 1; pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
         }
 
         /* --- BACKGROUND MEGA TYPE --- */
         .mega-bg-text {
             position: fixed;
-            top: 50%; left: 50%;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'Syncopate', sans-serif;
             font-weight: 700;
             font-size: 25vw;
-            color: rgba(255,255,255,0.02);
+            color: rgba(255, 255, 255, 0.02);
             white-space: nowrap;
             z-index: 0;
             pointer-events: none;
@@ -75,8 +103,13 @@
 
         /* --- UI LAYER --- */
         #ui-layer {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 10; pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
             perspective: 1000px;
         }
 
@@ -88,7 +121,8 @@
             display: flex;
             gap: 20px;
             z-index: 100;
-            pointer-events: auto; /* Enable interaction */
+            pointer-events: auto;
+            /* Enable interaction */
         }
 
         .nav-btn {
@@ -98,19 +132,19 @@
             color: #fff;
             text-decoration: none;
             padding: 12px 28px;
-            
+
             /* Glass Effect */
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 4px;
-            
+
             text-transform: uppercase;
             letter-spacing: 0.15em;
             position: relative;
             overflow: hidden;
-            
+
             /* 3D Setup */
             transition: border-color 0.3s, box-shadow 0.3s;
             transform-style: preserve-3d;
@@ -122,16 +156,16 @@
         .nav-btn::before {
             content: '';
             position: absolute;
-            top: 0; left: -150%;
-            width: 150%; height: 100%;
-            background: linear-gradient(
-                90deg, 
-                transparent, 
-                rgba(255,255,255,0.2), 
-                rgba(255,255,255,0.6), 
-                rgba(255,255,255,0.2), 
-                transparent
-            );
+            top: 0;
+            left: -150%;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    rgba(255, 255, 255, 0.6),
+                    rgba(255, 255, 255, 0.2),
+                    transparent);
             transition: left 0.6s cubic-bezier(0.2, 1, 0.3, 1);
             transform: skewX(-25deg);
             pointer-events: none;
@@ -139,7 +173,8 @@
 
         .nav-btn:hover {
             border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 20px rgba(255, 59, 48, 0.15); /* Subtle accent glow */
+            box-shadow: 0 0 20px rgba(255, 59, 48, 0.15);
+            /* Subtle accent glow */
         }
 
         .nav-btn:hover::before {
@@ -148,9 +183,14 @@
 
         /* --- TYPOGRAPHY & LAYOUT --- */
         .section {
-            position: absolute; width: 100%; height: 100vh;
-            display: flex; flex-direction: column; justify-content: center;
-            padding: 0 5vw; will-change: transform;
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 5vw;
+            will-change: transform;
             z-index: 10;
         }
 
@@ -162,16 +202,16 @@
             text-transform: uppercase;
             letter-spacing: -0.04em;
             color: transparent;
-            -webkit-text-stroke: 1px rgba(255,255,255,0.8);
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
             position: relative;
             z-index: 2;
         }
-        
+
         .h-line {
             overflow: hidden;
             display: block;
         }
-        
+
         .char {
             display: inline-block;
             transform-origin: 50% 100%;
@@ -193,7 +233,7 @@
             display: block;
             overflow: hidden;
         }
-        
+
         .meta-line {
             display: block;
         }
@@ -205,11 +245,11 @@
             font-weight: 700;
             text-transform: uppercase;
             color: transparent;
-            -webkit-text-stroke: 1px rgba(255,255,255,0.4);
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.4);
             cursor: none;
             pointer-events: auto;
             position: relative;
-            display: table; 
+            display: table;
             margin: 1rem 0;
             transition: transform 0.6s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.3s;
             mix-blend-mode: exclusion;
@@ -218,7 +258,9 @@
 
         .project-link::before {
             content: attr(data-text);
-            position: absolute; top: 0; left: 0;
+            position: absolute;
+            top: 0;
+            left: 0;
             color: var(--accent);
             -webkit-text-stroke: 0;
             clip-path: inset(0 100% 0 0);
@@ -227,16 +269,18 @@
 
         .project-link:hover {
             transform: translateX(30px);
-            -webkit-text-stroke: 1px rgba(255,255,255,0.8);
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
         }
+
         .project-link:hover::before {
             clip-path: inset(0 0 0 0);
         }
-        
+
         #sect-visuals .project-link {
             font-size: clamp(1.5rem, 4vw, 5rem);
             -webkit-text-stroke: 1px rgba(142, 142, 147, 0.5);
         }
+
         #sect-visuals .project-link::before {
             color: #fff;
         }
@@ -249,7 +293,8 @@
             width: 100%;
             max-width: 1200px;
             margin-top: 3rem;
-            pointer-events: auto; /* Enable interaction */
+            pointer-events: auto;
+            /* Enable interaction */
         }
 
         .service-card {
@@ -296,10 +341,12 @@
             opacity: 0.5;
             pointer-events: none;
         }
+
         .marquee-inner {
             display: inline-block;
             animation: marquee 20s linear infinite;
         }
+
         .marquee-item {
             font-family: 'Syncopate', sans-serif;
             font-size: 4rem;
@@ -308,19 +355,28 @@
             color: transparent;
             -webkit-text-stroke: 1px #fff;
         }
+
         @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
         }
 
         /* --- MAGNET BUTTONS --- */
         .magnet-btn {
             pointer-events: auto;
             display: inline-block;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            width: 160px; height: 160px;
-            display: flex; justify-content: center; align-items: center;
+            width: 160px;
+            height: 160px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-family: 'Manrope', sans-serif;
             font-size: 0.9rem;
             text-transform: uppercase;
@@ -328,94 +384,185 @@
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
-            background: rgba(255,255,255,0.01);
+            background: rgba(255, 255, 255, 0.01);
             backdrop-filter: blur(5px);
             color: #fff;
             text-decoration: none;
             text-align: center;
             line-height: 1.4;
         }
-        
+
         .magnet-btn:hover {
             border-color: var(--accent);
             color: var(--bg);
         }
-        
+
         .magnet-fill {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: var(--accent);
             border-radius: 50%;
             transform: scale(0);
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: -1;
         }
-        .magnet-btn:hover .magnet-fill { transform: scale(1); }
+
+        .magnet-btn:hover .magnet-fill {
+            transform: scale(1);
+        }
 
         /* --- CURSOR --- */
         #cursor {
-            position: fixed; width: 20px; height: 20px;
+            position: fixed;
+            width: 20px;
+            height: 20px;
             background: #fff;
             border-radius: 50%;
             transform: translate(-50%, -50%);
-            pointer-events: none; z-index: 1000;
+            pointer-events: none;
+            z-index: 1000;
             mix-blend-mode: difference;
             transition: width 0.3s, height 0.3s, opacity 0.3s;
         }
-        #cursor.hovered { 
-            width: 80px; height: 80px; 
-            background: #fff; 
-            opacity: 0.1; 
-            mix-blend-mode: normal; 
-            backdrop-filter: invert(1); 
+
+        #cursor.hovered {
+            width: 80px;
+            height: 80px;
+            background: #fff;
+            opacity: 0.1;
+            mix-blend-mode: normal;
+            backdrop-filter: invert(1);
         }
 
         /* --- GRAIN OVERLAY --- */
         .grain {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 900;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 900;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
             opacity: 0.07;
         }
 
         /* --- HUD --- */
         .hud {
-            position: fixed; z-index: 100;
-            font-size: 10px; font-family: 'Manrope', sans-serif;
-            color: rgba(255,255,255,0.4); text-transform: uppercase;
+            position: fixed;
+            z-index: 100;
+            font-size: 10px;
+            font-family: 'Manrope', sans-serif;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
             pointer-events: none;
             opacity: 0;
         }
-        .hud-tl { top: 30px; left: 30px; }
-        .hud-tr { top: 30px; right: 30px; text-align: right; }
-        .hud-bl { bottom: 30px; left: 30px; display: flex; align-items: flex-end; gap: 20px; }
-        .scroll-line { width: 1px; height: 100px; background: rgba(255,255,255,0.2); position: relative; overflow: hidden; }
-        .scroll-prog { position: absolute; top: 0; left: 0; width: 100%; height: 0%; background: var(--accent); }
+
+        .hud-tl {
+            top: 30px;
+            left: 30px;
+        }
+
+        .hud-tr {
+            top: 30px;
+            right: 30px;
+            text-align: right;
+        }
+
+        .hud-bl {
+            bottom: 30px;
+            left: 30px;
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scroll-prog {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: var(--accent);
+        }
 
         /* Section Specific Alignment */
-        #sect-hero { align-items: flex-start; }
-        #sect-about { align-items: flex-end; text-align: right; }
-        #sect-services { align-items: center; justify-content: center; }
-        #sect-work { align-items: center; text-align: center; }
-        #sect-visuals { align-items: flex-end; text-align: right; }
-        #sect-footer { align-items: center; justify-content: center; }
+        #sect-hero {
+            align-items: flex-start;
+        }
+
+        #sect-about {
+            align-items: flex-end;
+            text-align: right;
+        }
+
+        #sect-services {
+            align-items: center;
+            justify-content: center;
+        }
+
+        #sect-work {
+            align-items: center;
+            text-align: center;
+        }
+
+        #sect-visuals {
+            align-items: flex-end;
+            text-align: right;
+        }
+
+        #sect-footer {
+            align-items: center;
+            justify-content: center;
+        }
 
         @media (max-width: 768px) {
-            h1 { font-size: 12vw; }
-            .project-link { font-size: 8vw; }
-            .section { padding: 0 20px; }
-            .mega-bg-text { display: none; }
-            .top-nav { display: none; }
-            .services-grid { grid-template-columns: 1fr; }
+            h1 {
+                font-size: 12vw;
+            }
+
+            .project-link {
+                font-size: 8vw;
+            }
+
+            .section {
+                padding: 0 20px;
+            }
+
+            .mega-bg-text {
+                display: none;
+            }
+
+            .top-nav {
+                display: none;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- OVERLAYS -->
     <div class="grain"></div>
     <div id="cursor"></div>
     <div class="mega-bg-text" id="mega-text">PARALLAX</div>
-    
+
     <div id="loader">
         <div id="loader-text">INITIALIZING</div>
         <div class="loader-progress" id="loader-prog"></div>
@@ -428,13 +575,15 @@
     <div class="hud hud-tl">PARALLAX OS<br>[BUILD 2025.2.0]</div>
     <div class="hud hud-tr">COORDINATES<br><span id="coords">00.00 / 00.00</span></div>
     <div class="hud hud-bl">
-        <div class="scroll-line"><div class="scroll-prog" id="scroll-bar"></div></div>
+        <div class="scroll-line">
+            <div class="scroll-prog" id="scroll-bar"></div>
+        </div>
         <div>SCROLL TO NAVIGATE</div>
     </div>
 
     <!-- CONTENT -->
     <div id="ui-layer">
-        
+
         <!-- TOP NAV -->
         <nav class="top-nav">
             <a href="#sect-services" class="nav-btn">SERVICES</a>
@@ -458,7 +607,8 @@
             <span class="meta-label">002 /// PHILOSOPHY</span>
             <h1>BEYOND<br>THE<br><span class="filled-text">INTERFACE</span></h1>
             <p style="max-width: 400px; margin-top: 2rem; font-size: 1.1rem; color: #aaa; line-height: 1.6;">
-                We construct immersive digital experiences. Merging fluid WebGL mechanics with precise interaction design to create the unforgettable.
+                We construct immersive digital experiences. Merging fluid WebGL mechanics with precise interaction
+                design to create the unforgettable.
             </p>
             <div class="marquee-container">
                 <div class="marquee-inner">
@@ -478,7 +628,7 @@
         <div class="section" id="sect-services">
             <span class="meta-label" style="margin-bottom: 2rem;">003 /// CAPABILITIES</span>
             <h1>OUR<br><span class="filled-text">EXPERTISE</span></h1>
-            
+
             <div class="services-grid">
                 <div class="service-card">
                     <span class="service-num">01</span>
@@ -522,18 +672,25 @@
         <!-- WORK (WEB) -->
         <div class="section" id="sect-work">
             <span class="meta-label" style="margin-bottom: 4rem;">004 /// SELECTED WEB WORKS</span>
-            
+
             <div style="display: flex; flex-direction: column; align-items: center; gap: 2rem;">
-                <a href="https://sweetcrumb-app.vercel.app/" target="_blank" class="project-link" data-text="SWEET CRUMB" data-img="https://images.unsplash.com/photo-1555507036-ab1f40388085?q=80&w=2526&auto=format&fit=crop">
+                <a href="https://sweetcrumb-app.vercel.app/" target="_blank" class="project-link"
+                    data-text="SWEET CRUMB"
+                    data-img="https://images.unsplash.com/photo-1555507036-ab1f40388085?q=80&w=2526&auto=format&fit=crop">
                     SWEET CRUMB
                 </a>
-                <a href="https://funk-store.vercel.app/" target="_blank" class="project-link" data-text="FUNK STORE" data-img="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2670&auto=format&fit=crop">
+                <a href="https://funk-store.vercel.app/" target="_blank" class="project-link" data-text="FUNK STORE"
+                    data-img="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2670&auto=format&fit=crop">
                     FUNK STORE
                 </a>
-                <a href="https://glow-studio-woad.vercel.app/" target="_blank" class="project-link" data-text="GLOW STUDIO" data-img="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2670&auto=format&fit=crop">
+                <a href="https://glow-studio-woad.vercel.app/" target="_blank" class="project-link"
+                    data-text="GLOW STUDIO"
+                    data-img="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2670&auto=format&fit=crop">
                     GLOW STUDIO
                 </a>
-                <a href="https://cafe-aroma-site.vercel.app/" target="_blank" class="project-link" data-text="CAFE AROMA" data-img="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=2671&auto=format&fit=crop">
+                <a href="https://cafe-aroma-site.vercel.app/" target="_blank" class="project-link"
+                    data-text="CAFE AROMA"
+                    data-img="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=2671&auto=format&fit=crop">
                     CAFE AROMA
                 </a>
             </div>
@@ -542,18 +699,22 @@
         <!-- VISUALS (VIDEO & GRAPHICS) -->
         <div class="section" id="sect-visuals">
             <span class="meta-label" style="margin-bottom: 4rem;">005 /// VISUAL ARCHIVES</span>
-            
+
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 1.5rem; text-align: right;">
-                <a href="#" class="project-link" data-text="CINEMATIC REEL" data-img="https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=2600&auto=format&fit=crop">
+                <a href="#" class="project-link" data-text="CINEMATIC REEL"
+                    data-img="https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=2600&auto=format&fit=crop">
                     CINEMATIC REEL
                 </a>
-                <a href="#" class="project-link" data-text="BRAND IDENTITY" data-img="https://images.unsplash.com/photo-1626785774573-4b799314346d?q=80&w=2670&auto=format&fit=crop">
+                <a href="#" class="project-link" data-text="BRAND IDENTITY"
+                    data-img="https://images.unsplash.com/photo-1626785774573-4b799314346d?q=80&w=2670&auto=format&fit=crop">
                     BRAND IDENTITY
                 </a>
-                <a href="#" class="project-link" data-text="MOTION GFX" data-img="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2670&auto=format&fit=crop">
+                <a href="#" class="project-link" data-text="MOTION GFX"
+                    data-img="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2670&auto=format&fit=crop">
                     MOTION GFX
                 </a>
-                <a href="#" class="project-link" data-text="EDITORIAL" data-img="https://images.unsplash.com/photo-1542038784456-1ea0e93ca64b?q=80&w=2574&auto=format&fit=crop">
+                <a href="#" class="project-link" data-text="EDITORIAL"
+                    data-img="https://images.unsplash.com/photo-1542038784456-1ea0e93ca64b?q=80&w=2574&auto=format&fit=crop">
                     EDITORIAL
                 </a>
             </div>
@@ -562,9 +723,10 @@
         <!-- FOOTER -->
         <div class="section" id="sect-footer">
             <span class="meta-label">006 /// CONTACT</span>
-            <h1 style="font-size: 6vw; margin-bottom: 3rem;">INITIATE<br><span class="filled-text" style="color: var(--accent)">PROJECT</span></h1>
-            
-            <a href="#" class="magnet-btn">
+            <h1 style="font-size: 6vw; margin-bottom: 3rem;">INITIATE<br><span class="filled-text"
+                    style="color: var(--accent)">PROJECT</span></h1>
+
+            <a href="audit.html" class="magnet-btn">
                 <div class="magnet-fill"></div>
                 <span style="position: relative; z-index: 2;">CONTACT<br>& QUERY</span>
             </a>
@@ -573,7 +735,7 @@
     </div>
 
     <!-- SHADERS -->
-    
+
     <!-- GLASS CORE VERTEX -->
     <script type="x-shader/x-vertex" id="coreVert">
         varying vec3 vNormal;
@@ -826,11 +988,11 @@
                     let frame = 0;
                     const totalFrames = duration / 16;
                     const originalText = finalText.split('');
-                    
+
                     const interval = setInterval(() => {
                         frame++;
                         const progress = frame / totalFrames;
-                        
+
                         const currentText = originalText.map((char, index) => {
                             if (index < progress * originalText.length) {
                                 return char;
@@ -838,9 +1000,9 @@
                             // Random char for decoding effect
                             return scrambleChars[Math.floor(Math.random() * scrambleChars.length)];
                         }).join('');
-                        
+
                         element.innerText = currentText;
-                        
+
                         if (frame >= totalFrames) {
                             clearInterval(interval);
                             element.innerText = finalText;
@@ -855,7 +1017,7 @@
             const elements = document.querySelectorAll(selector);
             elements.forEach(el => {
                 const text = el.innerText;
-                el.innerHTML = text.split('').map(char => 
+                el.innerHTML = text.split('').map(char =>
                     char === ' ' ? '&nbsp;' : `<span class="char">${char}</span>`
                 ).join('');
             });
@@ -863,9 +1025,9 @@
 
         // --- SCENE SETUP ---
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 100);
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
         camera.position.z = 10;
-        
+
         const renderer = new THREE.WebGLRenderer({ canvas: dom.canvas, alpha: true, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -878,7 +1040,7 @@
             uniforms: {
                 uTime: { value: 0 },
                 uDeform: { value: 0 },
-                uColor: { value: new THREE.Color(0xFF3B30) } 
+                uColor: { value: new THREE.Color(0xFF3B30) }
             },
             transparent: true,
             side: THREE.DoubleSide
@@ -890,18 +1052,18 @@
         const pCount = 1000;
         const pGeo = new THREE.BufferGeometry();
         const pPos = new Float32Array(pCount * 3);
-        const pOrig = new Float32Array(pCount * 3); 
+        const pOrig = new Float32Array(pCount * 3);
 
-        for(let i=0; i<pCount*3; i+=3) {
+        for (let i = 0; i < pCount * 3; i += 3) {
             pPos[i] = (Math.random() - 0.5) * 30;
-            pPos[i+1] = (Math.random() - 0.5) * 30;
-            pPos[i+2] = (Math.random() - 0.5) * 10 - 5;
-            
+            pPos[i + 1] = (Math.random() - 0.5) * 30;
+            pPos[i + 2] = (Math.random() - 0.5) * 10 - 5;
+
             pOrig[i] = pPos[i];
-            pOrig[i+1] = pPos[i+1];
-            pOrig[i+2] = pPos[i+2];
+            pOrig[i + 1] = pPos[i + 1];
+            pOrig[i + 2] = pPos[i + 2];
         }
-        
+
         pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
         const pMat = new THREE.PointsMaterial({
             color: 0x8E8E93,
@@ -927,23 +1089,23 @@
             side: THREE.DoubleSide
         }));
         imgMesh.scale.set(6, 4, 1);
-        imgMesh.position.z = 2; 
+        imgMesh.position.z = 2;
         scene.add(imgMesh);
 
         let currentImgTarget = null;
         const projectLinks = document.querySelectorAll('.project-link');
-        
+
         projectLinks.forEach(link => {
             const url = link.getAttribute('data-img');
             const tex = textureLoader.load(url);
-            
+
             link.addEventListener('mouseenter', () => {
                 currentImgTarget = link;
                 imgMesh.material.uniforms.uTexture.value = tex;
                 gsap.to(imgMesh.material.uniforms.uAlpha, { value: 1, duration: 0.4 });
                 dom.cursor.classList.add('hovered');
             });
-            
+
             link.addEventListener('mouseleave', () => {
                 currentImgTarget = null;
                 gsap.to(imgMesh.material.uniforms.uAlpha, { value: 0, duration: 0.4 });
@@ -967,27 +1129,27 @@
         postScene.add(postQuad);
 
         // --- EVENTS & LOGIC ---
-        
+
         // 1. Loader & Intro Sequence (Active Theory Style Blend)
         const init = () => {
             // Prepare Split Text
             splitTextToSpans('.h-line');
             splitTextToSpans('.meta-line');
-            
+
             // Set initial state for blend effect
             gsap.set('#sect-hero', { scale: 1.15, transformOrigin: "center center" });
-            gsap.set(core.scale, { x: 1, y: 1, z: 1 }); 
+            gsap.set(core.scale, { x: 1, y: 1, z: 1 });
             gsap.set(core.position, { z: -10 }); // Start deep
 
             // 1. Progress Bar & Text
             gsap.to(dom.loaderProg, { width: '100%', duration: 1.5, ease: "expo.inOut" });
-            
+
             scrambleText(dom.loaderText, "SYSTEMS ONLINE", 1200, 100).then(() => {
-                
+
                 const tl = gsap.timeline();
 
                 // 2. THE BLEND: Fade out text -> Curtain Wipe + Content Zoom
-                
+
                 // Fade out loader text & progress bar so they don't linger during wipe
                 tl.to([dom.loaderText, dom.loaderProg], {
                     opacity: 0,
@@ -1018,7 +1180,7 @@
                     stagger: 0.03,
                     ease: "power4.out"
                 }, "-=1.3");
-                
+
                 // Meta labels typing in mechanically
                 tl.from('.meta-line .char', {
                     opacity: 0,
@@ -1030,11 +1192,11 @@
                 // 4. Dynamic 3D Entrance (Zoom In)
                 // Moves from -10 to 0 (Projecting into space)
                 tl.to(core.position, {
-                    z: 0, 
+                    z: 0,
                     duration: 2.5,
                     ease: "expo.out"
                 }, "-=1.8");
-                
+
                 // Spinning into place
                 tl.from(core.rotation, {
                     y: -Math.PI,
@@ -1042,7 +1204,7 @@
                     duration: 2.5,
                     ease: "expo.out"
                 }, "-=2.5");
-                
+
                 // Reveal HUD elements
                 tl.to(dom.hud, {
                     opacity: 1,
@@ -1087,30 +1249,30 @@
         window.addEventListener('mousemove', e => {
             const x = (e.clientX / window.innerWidth) * 2 - 1;
             const y = -(e.clientY / window.innerHeight) * 2 + 1;
-            
+
             config.targetMouse.set(x, y);
-            
+
             // DOM Cursor
             gsap.to(dom.cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
             dom.coords.innerText = `${x.toFixed(2)} / ${y.toFixed(2)}`;
-            
+
             // Magnet Button Effect (Existing Big Buttons)
             const hovered = e.target.closest('.magnet-btn');
-            if(hovered) {
+            if (hovered) {
                 const rect = hovered.getBoundingClientRect();
                 const centerX = rect.left + rect.width / 2;
                 const centerY = rect.top + rect.height / 2;
-                
+
                 const mx = (e.clientX - centerX) * 0.4;
                 const my = (e.clientY - centerY) * 0.4;
-                
+
                 gsap.to(hovered, { x: mx, y: my, duration: 0.3 });
             }
         });
 
         // Clear magnets when mouse leaves
         window.addEventListener('mouseover', e => {
-            if(!e.target.closest('.magnet-btn')) {
+            if (!e.target.closest('.magnet-btn')) {
                 gsap.to('.magnet-btn', { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
             }
         });
@@ -1123,9 +1285,9 @@
                 const y = e.clientY - rect.top;
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                
+
                 // Calculate tilt rotation (max 20deg)
-                const rotateX = ((y - centerY) / centerY) * -20; 
+                const rotateX = ((y - centerY) / centerY) * -20;
                 const rotateY = ((x - centerX) / centerX) * 20;
 
                 // Apply simple 3D transform without causing layout issues
@@ -1142,12 +1304,12 @@
                 e.preventDefault();
                 const targetId = btn.getAttribute('href');
                 const targetSection = document.querySelector(targetId);
-                
+
                 if (targetSection) {
                     // Find index of section
                     const allSections = Array.from(document.querySelectorAll('.section'));
                     const index = allSections.indexOf(targetSection);
-                    
+
                     if (index !== -1) {
                         // Update targetScroll to animate there
                         config.targetScroll = index * window.innerHeight;
@@ -1173,15 +1335,15 @@
 
         // --- ANIMATION LOOP ---
         const clock = new THREE.Clock();
-        
+
         function animate() {
             const time = clock.getElapsedTime();
-            
+
             // Smooth Scroll & Velocity Calculation
             const prevScroll = config.scroll;
-            config.scroll += (config.targetScroll - config.scroll) * 0.08; 
+            config.scroll += (config.targetScroll - config.scroll) * 0.08;
             config.scrollSpeed = Math.abs(config.scroll - prevScroll);
-            
+
             // Deform Core based on speed (Inertia effect)
             const targetDeform = Math.min(config.scrollSpeed * 0.1, 2.0);
             coreMat.uniforms.uDeform.value = THREE.MathUtils.lerp(coreMat.uniforms.uDeform.value, targetDeform, 0.1);
@@ -1189,12 +1351,12 @@
             // Scroll HUD
             const prog = config.scroll / config.height;
             dom.scrollBar.style.height = `${Math.min(100, Math.max(0, prog * 100))}%`;
-            
+
             // Mega BG Text Parallax
             dom.megaText.style.transform = `translate(-50%, -50%) translateY(${-config.scroll * 0.1}px)`;
-            
+
             // Marquee Acceleration
-            if(dom.marqueeInner) {
+            if (dom.marqueeInner) {
                 const speed = 1 + config.scrollSpeed * 0.5;
             }
 
@@ -1205,12 +1367,12 @@
                 // Parallax Skew + Scale Stretch
                 const skew = (config.targetScroll - config.scroll) * 0.005;
                 const stretch = 1 + Math.abs(config.scrollSpeed) * 0.002;
-                
+
                 sect.style.transform = `translateY(${y}px) skewY(${skew}deg) scaleY(${stretch})`;
             });
 
             // --- THREE JS UPDATES ---
-            
+
             // Mouse Smooth
             config.mouse.lerp(config.targetMouse, 0.1);
             config.mouseVel.subVectors(config.targetMouse, config.mouse);
@@ -1224,62 +1386,62 @@
 
             // 2. Particles (Flow Field)
             const positions = particles.geometry.attributes.position.array;
-            
+
             // Raycaster projection for mouse in 3D
             const vector = new THREE.Vector3(config.mouse.x, config.mouse.y, 0.5);
             vector.unproject(camera);
             const dir = vector.sub(camera.position).normalize();
             const distance = -camera.position.z / dir.z;
             const mousePos = camera.position.clone().add(dir.multiplyScalar(distance));
-            
-            for(let i=0; i<pCount; i++) {
-                const i3 = i*3;
-                
+
+            for (let i = 0; i < pCount; i++) {
+                const i3 = i * 3;
+
                 // Current pos
                 let px = positions[i3];
-                let py = positions[i3+1];
-                let pz = positions[i3+2];
-                
+                let py = positions[i3 + 1];
+                let pz = positions[i3 + 2];
+
                 // Original pos (plus scroll offset)
                 let ox = pOrig[i3];
-                let oy = pOrig[i3+1] + (config.scroll * 0.01); // Particles move up with scroll
-                
+                let oy = pOrig[i3 + 1] + (config.scroll * 0.01); // Particles move up with scroll
+
                 // Loop particles for infinite scroll feel
-                if(oy > 15) oy -= 30;
-                if(oy < -15) oy += 30;
+                if (oy > 15) oy -= 30;
+                if (oy < -15) oy += 30;
 
                 // Mouse Repulsion
                 const dx = mousePos.x - px;
                 const dy = mousePos.y - py;
-                const d = Math.sqrt(dx*dx + dy*dy);
-                
-                if(d < 4) {
+                const d = Math.sqrt(dx * dx + dy * dy);
+
+                if (d < 4) {
                     const force = (4 - d) / 4;
                     px -= dx * force * 0.05;
                     py -= dy * force * 0.05;
                 }
-                
+
                 // Return to origin (elastic)
                 px += (ox - px) * 0.05;
                 py += (oy - py) * 0.05;
-                pz += (pOrig[i3+2] - pz) * 0.05;
+                pz += (pOrig[i3 + 2] - pz) * 0.05;
 
                 positions[i3] = px;
-                positions[i3+1] = py;
-                positions[i3+2] = pz;
+                positions[i3 + 1] = py;
+                positions[i3 + 2] = pz;
             }
             particles.geometry.attributes.position.needsUpdate = true;
 
             // 3. Image Projection - DAMPENED PHYSICS FOR ELEGANCE
-            if(imgMesh.material.uniforms.uAlpha.value > 0.01) {
+            if (imgMesh.material.uniforms.uAlpha.value > 0.01) {
                 // Follow mouse (Gentle delay)
                 imgMesh.position.x = THREE.MathUtils.lerp(imgMesh.position.x, mousePos.x, 0.1);
                 imgMesh.position.y = THREE.MathUtils.lerp(imgMesh.position.y, mousePos.y, 0.1);
-                
+
                 // Liquid Distortion based on velocity (Reduced intensity)
                 const targetOffX = config.mouseVel.x * 15; // Was 40, now much subtler
                 const targetOffY = config.mouseVel.y * 15;
-                
+
                 // Lerp current offset (Heavier dampening for gel-like feel)
                 const uOff = imgMesh.material.uniforms.uOffset.value;
                 uOff.x += (targetOffX - uOff.x) * 0.05; // Was 0.1, slower reaction
@@ -1290,7 +1452,7 @@
             renderer.setRenderTarget(renderTarget);
             renderer.render(scene, camera);
             renderer.setRenderTarget(null);
-            
+
             postMat.uniforms.uTime.value = time;
             renderer.render(postScene, postCamera);
 
@@ -1300,6 +1462,5 @@
 
     </script>
 </body>
+
 </html>
-
-

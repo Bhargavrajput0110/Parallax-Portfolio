@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Audit | PARALLAX</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="js/api.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600;800&family=Syncopate:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --text: #e8e8e8;
+            --text-muted: #b0b0b0;
+            --accent: #FF3B30;
+            --accent-alt: #00D4FF;
+            --gold: #D4AF37;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Manrope', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* === SMOOTH SCROLLING === */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* === HEADER === */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .logo {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            background: linear-gradient(135deg, var(--accent), var(--accent-alt));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .back-btn {
+            padding: 10px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* === MAIN CONTAINER === */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+
+        /* === HERO SECTION === */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -50%;
+            left: -50%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 59, 48, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-50px);
+            }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 50px;
+            line-height: 1.8;
+        }
+
+        /* === AUDIT FORM === */
+        .audit-form {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 50px;
+            max-width: 500px;
+            margin: 0 auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 59, 48, 0.1);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: linear-gradient(135deg, var(--accent) 0%, #ff1744 100%);
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.4s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(255, 59, 48, 0.3);
+        }
+
+        .submit-btn:hover::before {
+            left: 100%;
+        }
+
+        /* === FEATURES SECTION === */
+        .features {
+            padding: 100px 40px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.02) 0%, rgba(255, 59, 48, 0.02) 100%);
+            margin-top: 80px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 60px;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .section-title .highlight {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 40px 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-5px);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        /* === CTA SECTION === */
+        .cta-section {
+            padding: 100px 40px;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+        }
+
+        .cta-section p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        /* === FOOTER === */
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            header {
+                padding: 20px 30px;
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .audit-form {
+                padding: 30px 20px;
+            }
+
+            .hero {
+                padding-top: 120px;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .features {
+                padding: 60px 30px;
+            }
+        }
+
+        /* === ANIMATIONS === */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        /* === WEBGL CANVAS === */
+        #webgl-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        body>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            z-index: 1001;
+        }
+
+        .feature-icon-number {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-alt) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- WEBGL CANVAS -->
+    <canvas id="webgl-bg"></canvas>
+
+    <!-- HEADER -->
+    <header>
+        <div class="logo">PARALLAX</div>
+        <a href="index.html" class="back-btn">← Back to Main</a>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content fade-in">
+            <h1>Digital <span class="highlight">Audit</span></h1>
+            <p>Get a comprehensive analysis of your digital presence. We'll identify opportunities, assess performance,
+                and provide actionable insights to elevate your brand.</p>
+        </div>
+    </section>
+
+    <!-- AUDIT FORM -->
+    <section style="padding: 60px 40px;">
+        <div class="container">
+            <form class="audit-form" id="auditForm">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" placeholder="Your name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="company">Company Name</label>
+                    <input type="text" id="company" name="company" placeholder="Your company" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="website">Website URL</label>
+                    <input type="url" id="website" name="website" placeholder="https://yoursite.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Tell us about your goals</label>
+                    <textarea id="message" name="message" placeholder="What are your primary business objectives?"
+                        required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Request Audit</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features">
+        <div class="features-container">
+            <h2 class="section-title">What We <span class="highlight">Analyze</span></h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon-number">01</span>
+                    <h3>Performance</h3>
+                    <p>Speed, SEO, accessibility, and core web vitals analysis to ensure your site performs at peak
+                        efficiency.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon-number">02</span>
+                    <h3>Design & UX</h3>
+                    <p>Visual hierarchy, user experience, brand consistency, and conversion-focused interface
+                        assessment.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon-number">03</span>
+                    <h3>Analytics</h3>
+                    <p>Traffic patterns, user behavior, conversion rates, and audience insights to optimize your
+                        strategy.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon-number">04</span>
+                    <h3>Security</h3>
+                    <p>SSL certificates, vulnerabilities, compliance standards, and data protection best practices
+                        review.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon-number">05</span>
+                    <h3>Mobile</h3>
+                    <p>Responsive design testing, mobile optimization, and cross-device compatibility evaluation.</p>
+                </div>
+
+                <div class="feature-card">
+                    <span class="feature-icon-number">06</span>
+                    <h3>Strategy</h3>
+                    <p>Competitor analysis, market positioning, growth opportunities, and transformation roadmap.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Ready to <span class="highlight">Transform?</span></h2>
+            <p>Let's unlock the potential of your digital presence together.</p>
+            <a href="#auditForm" class="back-btn"
+                style="display: inline-block; padding: 14px 32px; margin-top: 20px;">Start Your Audit</a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p>&copy; 2026 PARALLAX. All rights reserved. | Premium Digital Solutions</p>
+    </footer>
+
+    <script>
+        // ===== THREE.JS BACKGROUND ANIMATION =====
+        let scene, camera, renderer, particles;
+        const canvas = document.getElementById('webgl-bg');
+
+        function initThreeJS() {
+            // Scene Setup
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x0a0a0a, 1);
+            camera.position.z = 30;
+
+            // Create Particle System
+            const geometry = new THREE.BufferGeometry();
+            const particleCount = 150;
+            const positions = new Float32Array(particleCount * 3);
+            const velocities = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount * 3; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 100;
+                positions[i + 1] = (Math.random() - 0.5) * 100;
+                positions[i + 2] = (Math.random() - 0.5) * 100;
+
+                velocities[i] = (Math.random() - 0.5) * 0.3;
+                velocities[i + 1] = (Math.random() - 0.5) * 0.3;
+                velocities[i + 2] = (Math.random() - 0.5) * 0.3;
+
+                // Mix of red and cyan colors
+                if (Math.random() > 0.5) {
+                    colors[i] = 1; // Red channel
+                    colors[i + 1] = 0.23;
+                    colors[i + 2] = 0.19;
+                } else {
+                    colors[i] = 0; // Cyan channel
+                    colors[i + 1] = 0.84;
+                    colors[i + 2] = 1;
+                }
+            }
+
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            // Material
+            const material = new THREE.PointsMaterial({
+                size: 0.5,
+                vertexColors: true,
+                opacity: 0.6,
+                transparent: true,
+                sizeAttenuation: true
+            });
+
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+
+            // Create Geometric Shapes
+            createGeometricShapes();
+
+            // Handle Window Resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Start Animation Loop
+            animate();
+        }
+
+        function createGeometricShapes() {
+            // Floating Cube
+            const cubeGeom = new THREE.IcosahedronGeometry(8, 4);
+            const cubeMat = new THREE.MeshPhongMaterial({
+                color: 0xFF3B30,
+                emissive: 0xFF3B30,
+                wireframe: true,
+                opacity: 0.05,
+                transparent: true
+            });
+            const cube = new THREE.Mesh(cubeGeom, cubeMat);
+            cube.position.set(15, 10, -5);
+            cube.userData.speed = 0.001;
+            scene.add(cube);
+
+            // Floating Octahedron
+            const octGeom = new THREE.OctahedronGeometry(8, 2);
+            const octMat = new THREE.MeshPhongMaterial({
+                color: 0x00D4FF,
+                emissive: 0x00D4FF,
+                wireframe: true,
+                opacity: 0.05,
+                transparent: true
+            });
+            const oct = new THREE.Mesh(octGeom, octMat);
+            oct.position.set(-15, -10, -5);
+            oct.userData.speed = 0.0008;
+            scene.add(oct);
+
+            // Tetrahedron
+            const tetGeom = new THREE.TetrahedronGeometry(8, 1);
+            const tetMat = new THREE.MeshPhongMaterial({
+                color: 0xD4AF37,
+                emissive: 0xD4AF37,
+                wireframe: true,
+                opacity: 0.03,
+                transparent: true
+            });
+            const tet = new THREE.Mesh(tetGeom, tetMat);
+            tet.position.set(10, -15, -10);
+            tet.userData.speed = 0.0012;
+            scene.add(tet);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate Particles
+            particles.rotation.x += 0.0001;
+            particles.rotation.y += 0.0002;
+
+            // Update Particle Positions
+            const positions = particles.geometry.attributes.position.array;
+            const velocities = particles.geometry.attributes.velocity.array;
+
+            for (let i = 0; i < positions.length; i += 3) {
+                positions[i] += velocities[i];
+                positions[i + 1] += velocities[i + 1];
+                positions[i + 2] += velocities[i + 2];
+
+                // Boundary conditions
+                if (Math.abs(positions[i]) > 50) velocities[i] *= -1;
+                if (Math.abs(positions[i + 1]) > 50) velocities[i + 1] *= -1;
+                if (Math.abs(positions[i + 2]) > 50) velocities[i + 2] *= -1;
+            }
+            particles.geometry.attributes.position.needsUpdate = true;
+
+            // Rotate Geometric Shapes
+            scene.children.forEach(child => {
+                if (child.userData.speed) {
+                    child.rotation.x += child.userData.speed;
+                    child.rotation.y += child.userData.speed * 1.3;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', initThreeJS);
+
+        // ===== FORM & SCROLL ANIMATIONS =====
+        const auditForm = document.getElementById('auditForm');
+        if (auditForm) {
+            auditForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const submitBtn = this.querySelector('.submit-btn');
+                const originalText = submitBtn.textContent;
+
+                // Disable button and show loading state
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+                submitBtn.style.opacity = '0.7';
+
+                // Collect form data
+                const formData = {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    company: document.getElementById('company').value,
+                    website: document.getElementById('website').value,
+                    message: document.getElementById('message').value
+                };
+
+                try {
+                    // Send to backend API
+                    const response = await api.submitAuditRequest(formData);
+
+                    // Show success message
+                    submitBtn.textContent = '✓ Request Sent!';
+                    submitBtn.style.background = 'linear-gradient(135deg, #00C851 0%, #007E33 100%)';
+                    submitBtn.style.opacity = '1';
+
+                    // Reset form after 3 seconds
+                    setTimeout(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.style.background = '';
+                        submitBtn.disabled = false;
+                        auditForm.reset();
+                    }, 3000);
+
+                    console.log('✅ Audit request submitted successfully:', response);
+
+                } catch (error) {
+                    // Show error message
+                    submitBtn.textContent = '✗ Error - Try Again';
+                    submitBtn.style.background = 'linear-gradient(135deg, #ff1744 0%, #c62828 100%)';
+                    submitBtn.style.opacity = '1';
+
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        submitBtn.textContent = originalText;
+                        submitBtn.style.background = '';
+                        submitBtn.disabled = false;
+                    }, 3000);
+
+                    console.error('❌ Error submitting audit request:', error);
+                }
+            });
+        }
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'slideInUp 0.6s ease-out forwards';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feature-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+
+</body>
+
+</html>
