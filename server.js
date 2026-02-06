@@ -28,24 +28,48 @@ app.get('/audit', (req, res) => {
     res.sendFile(path.join(__dirname, 'audit.html'));
 });
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-    .then(() => {
-        console.log('✅ Connected to MongoDB');
+// Admin auth middleware (simple bearer token)
+const adminAuth = (req, res, next) => {
+    const adminKey = process.env.ADMIN_KEY || 'admin-secret-key-change-me';
+    const authHeader = req.headers['authorization'] || '';
+    const token = authHeader.replace('Bearer ', '');
 
-        // Start server only after DB connection
-        app.listen(PORT, () => {
-            console.log(`🚀 Server running on http://localhost:${PORT}`);
-            console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-        });
-    })
-    .catch((error) => {
-        console.error('❌ MongoDB connection error:', error);
-        process.exit(1);
+    if (token !== adminKey) {
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+    next();
+};
+
+app.get('/admin', adminAuth, (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// Protect admin API endpoints
+app.use('/api/admin', adminAuth);
+
+// MongoDB Connection (optional)
+async function startServer() {
+    if (process.env.MONGODB_URI) {
+        try {
+            await mongoose.connect(process.env.MONGODB_URI, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            });
+            console.log('✅ Connected to MongoDB');
+        } catch (error) {
+            console.warn('⚠️ MongoDB connection failed — continuing without DB:', error.message || error);
+        }
+    } else {
+        console.warn('⚠️ No MONGODB_URI configured — running without database.');
+    }
+
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
+}
+
+startServer();
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -67,6 +91,13 @@ app.use((req, res) => {
 // Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down gracefully...');
-    await mongoose.connection.close();
+    try {
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+            await mongoose.connection.close();
+            console.log('✅ MongoDB connection closed');
+        }
+    } catch (err) {
+        console.warn('Error closing MongoDB connection', err);
+    }
     process.exit(0);
 });

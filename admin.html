@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PARALLAX — Audit Admin</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#050505;color:#eee;padding:24px}
+    h1{font-weight:700}
+    .auth-form{max-width:300px;margin:40px auto;padding:20px;border:1px solid #333;border-radius:8px}
+    .auth-form input{width:100%;padding:8px;margin:10px 0;box-sizing:border-box;background:#222;border:1px solid #444;color:#eee;border-radius:4px}
+    .auth-form button{width:100%;padding:10px;background:#FF3B30;color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:bold}
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);text-align:left}
+    .btn{padding:6px 10px;border-radius:6px;cursor:pointer;border:none;margin-right:4px}
+    .danger{background:#e53935;color:#fff}
+    .muted{color:#999;font-size:0.9rem}
+    select{padding:6px;background:#222;border:1px solid #444;color:#eee;border-radius:4px}
+    .hidden{display:none}
+    .logout-btn{padding:4px 8px;background:#666;color:#fff;border:none;cursor:pointer;border-radius:3px;margin-left:10px}
+  </style>
+</head>
+<body>
+  <div id="authPanel" class="auth-form">
+    <h2>Admin Access</h2>
+    <p class="muted">Enter your admin key to access audit submissions</p>
+    <input type="password" id="adminKey" placeholder="Admin Key" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <h1>Audit Requests <button class="logout-btn" onclick="logout()">Logout</button></h1>
+    <p class="muted">Manage all audit submissions</p>
+    <div id="list">Loading…</div>
+  </div>
+
+  <script>
+    let adminToken = localStorage.getItem('adminToken');
+
+    function login(){
+      const key = document.getElementById('adminKey').value;
+      if(!key) return alert('Enter admin key');
+      adminToken = key;
+      localStorage.setItem('adminToken', key);
+      document.getElementById('authPanel').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      fetchList();
+    }
+
+    function logout(){
+      adminToken = null;
+      localStorage.removeItem('adminToken');
+      document.getElementById('authPanel').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('adminKey').value = '';
+    }
+
+    function getHeaders(){
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      };
+    }
+
+    async function fetchList(){
+      try {
+        const res = await fetch('/api/audit?limit=200', { headers: getHeaders() });
+        if(res.status === 401) {
+          logout();
+          return alert('Auth expired — please login again');
+        }
+        const json = await res.json();
+        const data = json.data || [];
+        render(data);
+      } catch(err){
+        alert('Error fetching audits: ' + err.message);
+      }
+    }
+
+    function render(items){
+      if(!items.length){
+        document.getElementById('list').innerHTML = '<p>No audit requests found.</p>';
+        return;
+      }
+      const rows = items.map(it=>{
+        const status = it.status || 'pending';
+        const date = new Date(it.createdAt).toLocaleDateString();
+        return `<tr data-id="${it._id}">
+          <td style="min-width:160px"><strong>${escapeHtml(it.name)}</strong><div class="muted">${escapeHtml(it.email)}</div></td>
+          <td>${escapeHtml(it.company)}<div class="muted">${escapeHtml(it.website||'')}</div></td>
+          <td style="width:30%">${escapeHtml((it.message||'').substring(0,50))}</td>
+          <td style="white-space:nowrap"><span class="muted">${date}</span></td>
+          <td style="white-space:nowrap">
+            <select data-action="status">${['pending','reviewed','contacted','completed'].map(s=>`<option ${s===status?'selected':''} value="${s}">${s}</option>`).join('')}</select>
+            <button class="btn" style="background:#007AFF;color:#fff" data-action="save">Save</button>
+            <button class="btn danger" data-action="delete">Delete</button>
+          </td>
+        </tr>`;
+      }).join('\n');
+      document.getElementById('list').innerHTML = `<table><thead><tr><th>Person</th><th>Company</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead><tbody>${rows}</tbody></table>`;
+      bindActions();
+    }
+
+    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>\"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+
+    function bindActions(){
+      document.querySelectorAll('button[data-action]').forEach(btn=>{
+        btn.onclick = async (e)=>{
+          const tr = e.target.closest('tr');
+          const id = tr.getAttribute('data-id');
+          const action = e.target.getAttribute('data-action');
+          if(action==='delete'){
+            if(!confirm('Permanently delete this request?')) return;
+            await fetch(`/api/audit?id=${id}`, { method: 'DELETE', headers: getHeaders() });
+            fetchList();
+          } else if(action==='save'){
+            const sel = tr.querySelector('select[data-action="status"]');
+            const status = sel.value;
+            await fetch(`/api/audit?id=${id}`, { method: 'PATCH', headers: getHeaders(), body: JSON.stringify({ status }) });
+            fetchList();
+          }
+        }
+      });
+    }
+
+    if(adminToken){
+      document.getElementById('authPanel').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      fetchList();
+    } else {
+      document.getElementById('adminKey').focus();
+    }
+  </script>
+</body>
+</html>
