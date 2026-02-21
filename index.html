@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030303">
     <title>PARALLAX | DIGITAL REALITY</title>
 
     <!-- Three.js -->
@@ -113,16 +114,15 @@
             perspective: 1000px;
         }
 
-        /* --- TOP NAV (NEW) --- */
+        /* --- TOP NAV --- */
         .top-nav {
             position: fixed;
             top: 40px;
             right: 50px;
             display: flex;
             gap: 20px;
-            z-index: 100;
+            z-index: 200;
             pointer-events: auto;
-            /* Enable interaction */
         }
 
         .nav-btn {
@@ -132,27 +132,21 @@
             color: #fff;
             text-decoration: none;
             padding: 12px 28px;
-
-            /* Glass Effect */
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 4px;
-
             text-transform: uppercase;
             letter-spacing: 0.15em;
             position: relative;
             overflow: hidden;
-
-            /* 3D Setup */
             transition: border-color 0.3s, box-shadow 0.3s;
             transform-style: preserve-3d;
             will-change: transform;
             cursor: pointer;
         }
 
-        /* Holographic Swipe */
         .nav-btn::before {
             content: '';
             position: absolute;
@@ -174,11 +168,94 @@
         .nav-btn:hover {
             border-color: rgba(255, 255, 255, 0.5);
             box-shadow: 0 0 20px rgba(255, 59, 48, 0.15);
-            /* Subtle accent glow */
         }
 
         .nav-btn:hover::before {
             left: 100%;
+        }
+
+        /* --- HAMBURGER MENU --- */
+        .hamburger {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 300;
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: #fff;
+            border-radius: 2px;
+            transition: transform 0.35s cubic-bezier(0.2, 1, 0.3, 1), opacity 0.25s;
+        }
+
+        .hamburger.open span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
+            transform: scaleX(0);
+        }
+
+        .hamburger.open span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
+        /* Mobile fullscreen menu overlay */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 3, 3, 0.97);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 250;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            pointer-events: auto;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .mobile-nav.open {
+            opacity: 1;
+        }
+
+        .mobile-nav-btn {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: transparent;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-decoration: none;
+            transition: -webkit-text-stroke 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .mobile-nav-btn:active {
+            color: var(--accent);
+            -webkit-text-stroke: 0;
         }
 
         /* --- TYPOGRAPHY & LAYOUT --- */
@@ -390,6 +467,7 @@
             text-decoration: none;
             text-align: center;
             line-height: 1.4;
+            cursor: pointer;
         }
 
         .magnet-btn:hover {
@@ -412,6 +490,10 @@
 
         .magnet-btn:hover .magnet-fill {
             transform: scale(1);
+        }
+
+        .magnet-btn>* {
+            pointer-events: none;
         }
 
         /* --- CURSOR --- */
@@ -526,31 +608,176 @@
         #sect-footer {
             align-items: center;
             justify-content: center;
+            pointer-events: auto;
         }
 
         @media (max-width: 768px) {
-            h1 {
-                font-size: 12vw;
+
+            /* Safe area for notched phones */
+            body {
+                cursor: auto;
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
             }
 
-            .project-link {
-                font-size: 8vw;
-            }
-
-            .section {
-                padding: 0 20px;
-            }
-
-            .mega-bg-text {
+            #cursor {
                 display: none;
+            }
+
+            /* Show hamburger, hide desktop nav */
+            .hamburger {
+                display: flex;
             }
 
             .top-nav {
                 display: none;
             }
 
+            /* Mobile nav overlay shows as flex when .open added via JS */
+            .mobile-nav {
+                display: flex;
+            }
+
+            h1 {
+                font-size: clamp(2rem, 14vw, 5rem);
+                line-height: 0.88;
+            }
+
+            .project-link {
+                font-size: clamp(1.4rem, 9vw, 3.5rem);
+                transform: none !important;
+                cursor: pointer;
+            }
+
+            .project-link:active {
+                opacity: 0.65;
+            }
+
+            .section {
+                padding: 0 24px;
+                padding-left: max(24px, env(safe-area-inset-left));
+                padding-right: max(24px, env(safe-area-inset-right));
+            }
+
+            .mega-bg-text {
+                display: none;
+            }
+
+            /* 2-col grid on phones — less scrolling than 1-col */
             .services-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+                margin-top: 1.5rem;
+            }
+
+            .service-card {
+                padding: 1rem 0.9rem;
+            }
+
+            .service-title {
+                font-size: 0.85rem;
+            }
+
+            /* Bigger, easier-to-tap CTA */
+            .magnet-btn {
+                width: 160px;
+                height: 160px;
+                font-size: 0.85rem;
+                transform: none !important;
+                -webkit-tap-highlight-color: transparent;
+            }
+
+            .magnet-btn:active {
+                transform: scale(0.93) !important;
+                background: rgba(255, 59, 48, 0.15) !important;
+            }
+
+            .project-link,
+            .service-card {
+                -webkit-tap-highlight-color: rgba(255, 59, 48, 0.15);
+            }
+
+            /* HUD stays subtle */
+            .hud {
+                font-size: 8px;
+            }
+
+            .hud-tl,
+            .hud-tr {
+                top: 12px;
+            }
+
+            .hud-tl {
+                left: 12px;
+            }
+
+            .hud-tr {
+                /* hide coordinates on mobile — not useful */
+                display: none;
+            }
+
+            .hud-bl {
+                bottom: max(14px, env(safe-area-inset-bottom));
+                left: 14px;
+            }
+
+            .scroll-line {
+                height: 50px;
+            }
+
+            /* Better spacing for footer */
+            #sect-footer h1 {
+                font-size: clamp(1.8rem, 12vw, 4rem) !important;
+                margin-bottom: 2rem !important;
+            }
+
+            /* About paragraph wraps on small screens */
+            #sect-about p {
+                max-width: 100% !important;
+                font-size: 0.95rem !important;
+            }
+
+            /* Marquee smaller on mobile */
+            .marquee-item {
+                font-size: 2rem;
+            }
+
+            .marquee-container {
+                bottom: 10vh;
+            }
+
+            .meta-label {
+                font-size: 0.65rem;
+                letter-spacing: 0.12em;
+            }
+
+            /* Work section — left-align on mobile is easier to read */
+            #sect-work {
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            #sect-work>div {
+                align-items: flex-start !important;
+            }
+
+            /* Visuals — centre on mobile */
+            #sect-visuals {
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            #sect-visuals>div {
+                align-items: flex-start !important;
+                text-align: left !important;
+            }
+
+            /* Services section scrollable if needed */
+            #sect-services {
+                justify-content: flex-start;
+                padding-top: 80px;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
         }
     </style>
@@ -578,13 +805,28 @@
         <div class="scroll-line">
             <div class="scroll-prog" id="scroll-bar"></div>
         </div>
-        <div>SCROLL TO NAVIGATE</div>
+        <div>SCROLL</div>
     </div>
+
+    <!-- HAMBURGER (mobile only) -->
+    <button class="hamburger" id="hamburger" aria-label="Open navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <!-- MOBILE NAV OVERLAY -->
+    <nav class="mobile-nav" id="mobile-nav" aria-hidden="true">
+        <a href="#sect-services" class="mobile-nav-btn" data-mobile-nav>SERVICES</a>
+        <a href="#sect-work" class="mobile-nav-btn" data-mobile-nav>WORK</a>
+        <a href="#sect-visuals" class="mobile-nav-btn" data-mobile-nav>VISUALS</a>
+        <a href="#sect-footer" class="mobile-nav-btn" data-mobile-nav>CONTACT</a>
+    </nav>
 
     <!-- CONTENT -->
     <div id="ui-layer">
 
-        <!-- TOP NAV -->
+        <!-- TOP NAV (desktop) -->
         <nav class="top-nav">
             <a href="#sect-services" class="nav-btn">SERVICES</a>
             <a href="#sect-work" class="nav-btn">WORK</a>
@@ -726,7 +968,7 @@
             <h1 style="font-size: 6vw; margin-bottom: 3rem;">INITIATE<br><span class="filled-text"
                     style="color: var(--accent)">PROJECT</span></h1>
 
-            <a href="audit.html" class="magnet-btn">
+            <a href="/audit" class="magnet-btn">
                 <div class="magnet-fill"></div>
                 <span style="position: relative; z-index: 2;">CONTACT<br>& QUERY</span>
             </a>
@@ -980,6 +1222,11 @@
             hud: document.querySelectorAll('.hud')
         };
 
+        // --- MOBILE DETECTION (early, used for GPU budget) ---
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+            ('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0);
+
         // --- UTILS: TEXT SCRAMBLE & SPLIT ---
         const scrambleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/*-+=.";
         function scrambleText(element, finalText, duration = 800, delay = 0) {
@@ -1049,7 +1296,7 @@
         scene.add(core);
 
         // --- FLOW FIELD PARTICLES ---
-        const pCount = 1000;
+        const pCount = isMobile ? 300 : 1000;
         const pGeo = new THREE.BufferGeometry();
         const pPos = new Float32Array(pCount * 3);
         const pOrig = new Float32Array(pCount * 3);
@@ -1246,36 +1493,85 @@
         });
 
         // 2. Input
+        // --- HAMBURGER MENU LOGIC ---
+        const hamburger = document.getElementById('hamburger');
+        const mobileNav = document.getElementById('mobile-nav');
+
+        hamburger.addEventListener('click', () => {
+            const isOpen = mobileNav.classList.toggle('open');
+            hamburger.classList.toggle('open', isOpen);
+            mobileNav.style.display = isOpen ? 'flex' : 'none';
+            mobileNav.setAttribute('aria-hidden', String(!isOpen));
+            // Allow open anim
+            if (isOpen) requestAnimationFrame(() => mobileNav.style.opacity = '1');
+        });
+
+        // Mobile nav links: close menu and scroll to section
+        document.querySelectorAll('[data-mobile-nav]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    const allSections = Array.from(document.querySelectorAll('.section'));
+                    const index = allSections.indexOf(targetSection);
+                    if (index !== -1) config.targetScroll = index * window.innerHeight;
+                }
+                // Close menu
+                mobileNav.classList.remove('open');
+                mobileNav.style.opacity = '0';
+                hamburger.classList.remove('open');
+                setTimeout(() => { mobileNav.style.display = 'none'; }, 350);
+                mobileNav.setAttribute('aria-hidden', 'true');
+            });
+        });
+
+        // Hide mobile-nav on desktop resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && mobileNav.classList.contains('open')) {
+                mobileNav.classList.remove('open');
+                mobileNav.style.display = 'none';
+                hamburger.classList.remove('open');
+            }
+        });
+
         window.addEventListener('mousemove', e => {
             const x = (e.clientX / window.innerWidth) * 2 - 1;
             const y = -(e.clientY / window.innerHeight) * 2 + 1;
 
             config.targetMouse.set(x, y);
 
-            // DOM Cursor
-            gsap.to(dom.cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+            // DOM Cursor (skip on mobile)
+            if (!isMobile) {
+                gsap.to(dom.cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+            }
             dom.coords.innerText = `${x.toFixed(2)} / ${y.toFixed(2)}`;
 
-            // Magnet Button Effect (Existing Big Buttons)
-            const hovered = e.target.closest('.magnet-btn');
-            if (hovered) {
-                const rect = hovered.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
+            // Magnet Button Effect (Disabled on mobile)
+            if (!isMobile) {
+                const hovered = e.target.closest('.magnet-btn');
+                if (hovered) {
+                    const rect = hovered.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
 
-                const mx = (e.clientX - centerX) * 0.4;
-                const my = (e.clientY - centerY) * 0.4;
+                    const mx = (e.clientX - centerX) * 0.4;
+                    const my = (e.clientY - centerY) * 0.4;
 
-                gsap.to(hovered, { x: mx, y: my, duration: 0.3 });
+                    gsap.to(hovered, { x: mx, y: my, duration: 0.3 });
+                }
             }
         });
 
-        // Clear magnets when mouse leaves
-        window.addEventListener('mouseover', e => {
-            if (!e.target.closest('.magnet-btn')) {
-                gsap.to('.magnet-btn', { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
-            }
-        });
+        // Clear magnets when mouse leaves (skip on mobile)
+        if (!isMobile) {
+            window.addEventListener('mouseover', e => {
+                if (!e.target.closest('.magnet-btn')) {
+                    gsap.to('.magnet-btn', { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+                }
+            });
+        }
+
 
         // --- NEW: 3D Tilt for Top Nav Buttons ---
         document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1324,14 +1620,34 @@
             config.targetScroll = Math.max(0, Math.min(config.targetScroll, config.height));
         });
 
-        // Touch
-        window.addEventListener('touchstart', e => config.touchY = e.touches[0].clientY);
+        // Touch — passive listeners for performance, natural 1:1 feel
+        let touchStartY = 0;
+        let lastTouchY = 0;
+        window.addEventListener('touchstart', e => {
+            touchStartY = e.touches[0].clientY;
+            lastTouchY = e.touches[0].clientY;
+            config.touchY = e.touches[0].clientY;
+        }, { passive: true });
+
         window.addEventListener('touchmove', e => {
             const dy = config.touchY - e.touches[0].clientY;
             config.touchY = e.touches[0].clientY;
-            config.targetScroll += dy * 2;
+            // Reduced multiplier (1.5 instead of 2) for less over-scroll
+            config.targetScroll += dy * 1.5;
             config.targetScroll = Math.max(0, Math.min(config.targetScroll, config.height));
-        });
+        }, { passive: true });
+
+        // Swipe snap: after finger lifts, snap to nearest section
+        window.addEventListener('touchend', () => {
+            const sectionIndex = Math.round(config.targetScroll / window.innerHeight);
+            const snapped = sectionIndex * window.innerHeight;
+            // Only snap if not in a scrollable section (services)
+            const activeSect = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
+            const inScrollable = activeSect && activeSect.closest('#sect-services');
+            if (!inScrollable) {
+                config.targetScroll = Math.max(0, Math.min(snapped, config.height));
+            }
+        }, { passive: true });
 
         // --- ANIMATION LOOP ---
         const clock = new THREE.Clock();
@@ -1364,11 +1680,16 @@
             const currentSections = document.querySelectorAll('.section');
             currentSections.forEach((sect, i) => {
                 const y = i * window.innerHeight - config.scroll;
-                // Parallax Skew + Scale Stretch
-                const skew = (config.targetScroll - config.scroll) * 0.005;
-                const stretch = 1 + Math.abs(config.scrollSpeed) * 0.002;
 
-                sect.style.transform = `translateY(${y}px) skewY(${skew}deg) scaleY(${stretch})`;
+                // Disable skew/scale on mobile for better performance
+                if (isMobile) {
+                    sect.style.transform = `translateY(${y}px)`;
+                } else {
+                    // Parallax Skew + Scale Stretch (desktop only)
+                    const skew = (config.targetScroll - config.scroll) * 0.005;
+                    const stretch = 1 + Math.abs(config.scrollSpeed) * 0.002;
+                    sect.style.transform = `translateY(${y}px) skewY(${skew}deg) scaleY(${stretch})`;
+                }
             });
 
             // --- THREE JS UPDATES ---

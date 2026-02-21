@@ -50,8 +50,8 @@ const auditValidation = [
         .notEmpty().withMessage('Company name is required')
         .isLength({ max: 150 }).withMessage('Company name cannot exceed 150 characters'),
     body('website')
+        .optional({ checkFalsy: true })
         .trim()
-        .notEmpty().withMessage('Website URL is required')
         .isURL().withMessage('Please provide a valid URL'),
     body('message')
         .trim()
